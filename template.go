@@ -18,9 +18,16 @@ import (
 
 var ERROR_CLASS = "hasError"
 
+type TemplateLoader interface {
+	Refresh() *Error
+	WatchDir(info os.FileInfo) bool
+	WatchFile(basename string) bool
+	Template(name string) (Template, error)
+	Paths() []string
+}
 // This object handles loading and parsing of templates.
 // Everything below the application's views directory is treated as a template.
-type TemplateLoader struct {
+type GoTemplateLoader struct {
 	// This is the set of all templates under views
 	templateSet *template.Template
 	// If an error was encountered parsing the templates, it is stored here.
@@ -156,17 +163,21 @@ var (
 	}
 )
 
-func NewTemplateLoader(paths []string) *TemplateLoader {
-	loader := &TemplateLoader{
+func NewGoTemplateLoader(paths []string) *GoTemplateLoader {
+	loader := &GoTemplateLoader{
 		paths: paths,
 	}
 	return loader
 }
 
+func (loader *GoTemplateLoader) Paths() []string {
+	return loader.paths
+}
+
 // This scans the views directory and parses all templates as Go Templates.
 // If a template fails to parse, the error is set on the loader.
 // (It's awkward to refresh a single Go Template)
-func (loader *TemplateLoader) Refresh() *Error {
+func (loader *GoTemplateLoader) Refresh() *Error {
 	TRACE.Printf("Refreshing templates from %s", loader.paths)
 
 	loader.compileError = nil
@@ -292,12 +303,12 @@ func (loader *TemplateLoader) Refresh() *Error {
 	return loader.compileError
 }
 
-func (loader *TemplateLoader) WatchDir(info os.FileInfo) bool {
+func (loader *GoTemplateLoader) WatchDir(info os.FileInfo) bool {
 	// Watch all directories, except the ones starting with a dot.
 	return !strings.HasPrefix(info.Name(), ".")
 }
 
-func (loader *TemplateLoader) WatchFile(basename string) bool {
+func (loader *GoTemplateLoader) WatchFile(basename string) bool {
 	// Watch all files, except the ones starting with a dot.
 	return !strings.HasPrefix(basename, ".")
 }
@@ -327,7 +338,7 @@ func parseTemplateError(err error) (templateName string, line int, description s
 //
 // An Error is returned if there was any problem with any of the templates.  (In
 // this case, if a template is returned, it may still be usable.)
-func (loader *TemplateLoader) Template(name string) (Template, error) {
+func (loader *GoTemplateLoader) Template(name string) (Template, error) {
 	// Look up and return the template.
 	tmpl := loader.templateSet.Lookup(name)
 
@@ -349,7 +360,7 @@ func (loader *TemplateLoader) Template(name string) (Template, error) {
 // Adapter for Go Templates.
 type GoTemplate struct {
 	*template.Template
-	loader *TemplateLoader
+	loader *GoTemplateLoader
 }
 
 // return a 'revel.Template' from Go's template.

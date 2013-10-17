@@ -137,7 +137,7 @@ You can add it to a run mode configuration with the following line:
 
 	// Load the result template, which we execute for each suite.
 	module, _ := revel.ModuleByName("testrunner")
-	TemplateLoader := revel.NewTemplateLoader([]string{path.Join(module.Path, "app", "views")})
+	TemplateLoader := revel.NewGoTemplateLoader([]string{path.Join(module.Path, "app", "views")})
 	if err := TemplateLoader.Refresh(); err != nil {
 		errorf("Failed to compile templates: %s", err)
 	}

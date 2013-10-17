@@ -9,7 +9,7 @@ import (
 
 var (
 	MainRouter         *Router
-	MainTemplateLoader *TemplateLoader
+	MainTemplateLoader *TemplateLocator
 	MainWatcher        *Watcher
 	Server             *http.Server
 )
@@ -56,7 +56,7 @@ func Run(port int) {
 		address = fmt.Sprintf("%s:%d", address, port)
 	}
 
-	MainTemplateLoader = NewTemplateLoader(TemplatePaths)
+	MainTemplateLoader = NewTemplateLocator(TemplatePaths)
 
 	// The "watch" config variable can turn on and off all watching.
 	// (As a convenient way to control it all together.)
@@ -68,7 +68,7 @@ func Run(port int) {
 	// If desired (or by default), create a watcher for templates and routes.
 	// The watcher calls Refresh() on things on the first request.
 	if MainWatcher != nil && Config.BoolDefault("watch.templates", true) {
-		MainWatcher.Listen(MainTemplateLoader, MainTemplateLoader.paths...)
+		MainWatcher.Listen(MainTemplateLoader, MainTemplateLoader.Paths()...)
 	} else {
 		MainTemplateLoader.Refresh()
 	}

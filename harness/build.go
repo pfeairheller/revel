@@ -35,6 +35,10 @@ func Build() (app *App, compileError *revel.Error) {
 		sourceInfo.InitImportPaths = append(sourceInfo.InitImportPaths, dbImportPath)
 	}
 
+	if result, _:= revel.Config.Bool("template.engine.mustache"); result {
+		sourceInfo.InitImportPaths = append(sourceInfo.InitImportPaths, "github.com/robfig/revel/template/mustache")
+	}
+
 	// Generate two source files.
 	templateArgs := map[string]interface{}{
 		"Controllers":    sourceInfo.ControllerSpecs(),

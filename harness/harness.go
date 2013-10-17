@@ -79,7 +79,8 @@ func (hp *Harness) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func NewHarness() *Harness {
 	// Get a template loader to render errors.
 	// Prefer the app's views/errors directory, and fall back to the stock error pages.
-	revel.MainTemplateLoader = revel.NewTemplateLoader(
+
+	revel.MainTemplateLoader = revel.NewTemplateLocator(
 		[]string{path.Join(revel.RevelPath, "templates")})
 	revel.MainTemplateLoader.Refresh()
 
